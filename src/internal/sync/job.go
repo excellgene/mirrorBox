@@ -19,15 +19,12 @@ const (
 	StatusError                    // Last run failed
 )
 
-// Job represents a complete sync job.
-// Responsibility: Orchestrate the full sync workflow (walk, diff, sync).
-// This is the main entry point for running a sync operation.
 type Job struct {
 	Name            string
 	SourcePath      string
 	DestinationPath string
 
-	// Dependencies (injected)
+	// Dependencies
 	sourceWalker fs.Walker
 	destWalker   fs.Walker
 	differ       *Differ
@@ -121,22 +118,18 @@ func (j *Job) Run(ctx context.Context) (*SyncResult, error) {
 	return syncResult, nil
 }
 
-// Status returns the current job status.
 func (j *Job) Status() JobStatus {
 	return j.status
 }
 
-// LastResult returns the result of the last run.
 func (j *Job) LastResult() *SyncResult {
 	return j.lastResult
 }
 
-// LastError returns the error from the last run, if any.
 func (j *Job) LastError() error {
 	return j.lastError
 }
 
-// LastRun returns when the job was last executed.
 func (j *Job) LastRun() time.Time {
 	return j.lastRun
 }

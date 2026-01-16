@@ -12,9 +12,6 @@ import (
 	"excellgene.com/symbaSync/internal/ui"
 )
 
-// main is the application entry point.
-// Responsibility: Wire dependencies and start the application.
-// NO BUSINESS LOGIC. Only dependency injection and lifecycle management.
 func main() {
 	log.Println("Starting SambaSync...")
 

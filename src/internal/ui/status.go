@@ -13,7 +13,6 @@ import (
 //   - Display sync statistics
 //   - Show errors and logs
 //
-// NO BUSINESS LOGIC. Only UI presentation.
 type StatusWindow struct {
 	state *app.State
 }

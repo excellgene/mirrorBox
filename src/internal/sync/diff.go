@@ -4,33 +4,30 @@ import (
 	"excellgene.com/symbaSync/internal/infra/fs"
 )
 
+
 // Action represents what needs to be done for a file.
 type Action int
 
 const (
-	ActionNone   Action = iota // File is in sync
-	ActionCreate               // File needs to be created at destination
-	ActionUpdate               // File exists but needs to be updated
-	ActionDelete               // File exists at dest but not source (if delete enabled)
+	ActionNone   Action = iota
+	ActionCreate
+	ActionUpdate
+	ActionDelete
 )
 
-// FileDiff represents the difference for a single file.
 type FileDiff struct {
-	Path   string      // Relative path
-	Action Action      // What needs to be done
-	Source *fs.FileInfo // Source file info (nil if file only exists at dest)
-	Dest   *fs.FileInfo // Dest file info (nil if file only exists at source)
+	Path   string 
+	Action Action
+	Source *fs.FileInfo
+	Dest   *fs.FileInfo
 }
 
-// DiffResult contains all differences found between source and destination.
 type DiffResult struct {
 	Diffs []FileDiff
 }
 
 // Differ compares source and destination filesystems.
-// Responsibility: Pure comparison logic. No I/O.
 type Differ struct {
-	// DeleteExtraFiles determines if files at dest but not source should be deleted
 	DeleteExtraFiles bool
 }
 

@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 )
 
-// Store handles persistence of configuration.
-// Responsibility: Load/save config from/to disk. No business logic.
 type Store struct {
 	configPath string
 }

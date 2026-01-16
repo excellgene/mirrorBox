@@ -18,13 +18,6 @@ type JobEvent struct {
 	Error   error
 }
 
-// Dispatcher manages and executes sync jobs.
-// Responsibility:
-//   - Schedule and run jobs
-//   - Manage goroutines and cancellation
-//   - Emit events for UI updates
-//
-// Dispatcher is the coordination layer between jobs and the rest of the app.
 type Dispatcher struct {
 	state  *State
 	events chan JobEvent
@@ -35,7 +28,6 @@ type Dispatcher struct {
 	wg     sync.WaitGroup
 }
 
-// NewDispatcher creates a new job dispatcher.
 func NewDispatcher(state *State) *Dispatcher {
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -53,8 +45,6 @@ func (d *Dispatcher) Events() <-chan JobEvent {
 	return d.events
 }
 
-// RunNow executes a job immediately.
-// Non-blocking: runs job in background goroutine.
 func (d *Dispatcher) RunNow(jobName string) error {
 	job := d.state.GetJob(jobName)
 	if job == nil {
@@ -71,8 +61,6 @@ func (d *Dispatcher) RunNow(jobName string) error {
 	return nil
 }
 
-// RunAll executes all registered jobs.
-// Non-blocking: each job runs in its own goroutine.
 func (d *Dispatcher) RunAll() {
 	jobs := d.state.AllJobs()
 
@@ -86,8 +74,6 @@ func (d *Dispatcher) RunAll() {
 	}
 }
 
-// StartScheduler starts the periodic job scheduler.
-// Runs jobs at configured intervals until Stop() is called.
 func (d *Dispatcher) StartScheduler(interval time.Duration) {
 	d.wg.Add(1)
 	go func() {
@@ -108,8 +94,6 @@ func (d *Dispatcher) StartScheduler(interval time.Duration) {
 	}()
 }
 
-// Stop gracefully shuts down the dispatcher.
-// Waits for all running jobs to complete.
 func (d *Dispatcher) Stop() {
 	log.Println("Stopping dispatcher...")
 	d.cancel()
@@ -118,8 +102,6 @@ func (d *Dispatcher) Stop() {
 	log.Println("Dispatcher stopped")
 }
 
-// runJob executes a single job and emits events.
-// This is the internal method that actually runs the job.
 func (d *Dispatcher) runJob(job *syncpkg.Job) {
 	log.Printf("Running job: %s", job.Name)
 

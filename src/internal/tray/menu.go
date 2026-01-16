@@ -5,7 +5,6 @@ import (
 )
 
 // Menu holds references to system tray menu items.
-// Responsibility: Define menu structure and items.
 type Menu struct {
 	syncNow  *systray.MenuItem
 	status   *systray.MenuItem

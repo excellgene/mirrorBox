@@ -22,7 +22,6 @@ const (
 //   - Show menu items
 //   - Emit events when user clicks menu items
 //
-// NO BUSINESS LOGIC HERE. Only UI presentation and event emission.
 type Tray struct {
 	events chan Event
 	menu   *Menu

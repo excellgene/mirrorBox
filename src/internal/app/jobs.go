@@ -8,15 +8,10 @@ import (
 	syncpkg "excellgene.com/symbaSync/internal/sync"
 )
 
-// JobFactory creates sync jobs from configuration.
-// Responsibility: Convert config into runnable job instances.
-// Handles dependency injection for jobs.
 type JobFactory struct {
 	smbClientFactory func(cfg smb.Config) smb.Client
 }
 
-// NewJobFactory creates a new job factory.
-// smbClientFactory is a function that creates SMB clients (allows testing with mocks).
 func NewJobFactory(smbClientFactory func(cfg smb.Config) smb.Client) *JobFactory {
 	return &JobFactory{
 		smbClientFactory: smbClientFactory,

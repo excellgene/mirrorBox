@@ -9,7 +9,6 @@ import (
 	"excellgene.com/symbaSync/internal/infra/smb"
 )
 
-// SyncResult contains the outcome of a sync operation.
 type SyncResult struct {
 	FilesCreated int
 	FilesUpdated int
@@ -18,9 +17,6 @@ type SyncResult struct {
 	Errors       []error
 }
 
-// Syncer executes sync operations.
-// Responsibility: Coordinate file operations based on diff results.
-// Pure orchestration - delegates actual I/O to SMB client.
 type Syncer struct {
 	smbClient smb.Client
 }

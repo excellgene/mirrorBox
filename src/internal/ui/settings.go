@@ -12,8 +12,6 @@ import (
 //   - Allow user to modify sync jobs, paths, schedules
 //   - Save changes back to config
 //
-// NO BUSINESS LOGIC. Only UI presentation and user input handling.
-//
 // Implementation options:
 //   - Wails (web-based UI with Go backend)
 //   - Native GUI framework (fyne, gio, etc.)
