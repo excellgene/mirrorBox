@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"excellgene.com/symbaSync/internal/infra/fs"
-	"excellgene.com/symbaSync/internal/infra/smb"
 )
 
 // JobStatus represents the current state of a sync job.
@@ -39,16 +38,13 @@ type Job struct {
 
 // NewJob creates a new sync job.
 // sourceWalker walks the local filesystem.
-// smbClient provides access to remote filesystem.
-func NewJob(name, sourcePath, destPath string, smbClient smb.Client) *Job {
+func NewJob(name, sourcePath, destPath string) *Job {
 	return &Job{
 		Name:            name,
 		SourcePath:      sourcePath,
 		DestinationPath: destPath,
 		sourceWalker:    fs.NewLocalWalker(sourcePath),
-		// destWalker would be created from smbClient.Walk() when running
 		differ: NewDiffer(),
-		syncer: NewSyncer(smbClient),
 		status: StatusIdle,
 	}
 }

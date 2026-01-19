@@ -9,7 +9,7 @@ import (
 // State holds the runtime state of the application.
 type State struct {
 	mu   sync.RWMutex
-	jobs map[string]*syncpkg.Job // Job name -> Job
+	jobs map[string]*syncpkg.Job 
 }
 
 func NewState() *State {

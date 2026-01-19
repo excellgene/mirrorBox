@@ -3,7 +3,8 @@ package tray
 import (
 	"log"
 
-	"github.com/getlantern/systray"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
 )
 
 // Event represents a user action from the system tray.
@@ -17,19 +18,16 @@ const (
 )
 
 // Tray manages the system tray icon and menu.
-// Responsibility:
-//   - Display system tray icon
-//   - Show menu items
-//   - Emit events when user clicks menu items
-//
 type Tray struct {
+	app    fyne.App
 	events chan Event
 	menu   *Menu
 }
 
-// New creates a new system tray manager.
+// New creates a new tray manager.
 func New() *Tray {
 	return &Tray{
+		app:    app.NewWithID("com.excellgene.sambasync"),
 		events: make(chan Event, 10),
 	}
 }
@@ -39,64 +37,29 @@ func (t *Tray) Events() <-chan Event {
 	return t.events
 }
 
-// Run starts the system tray.
-// This is a blocking call that runs the tray event loop.
-// Call this in a goroutine or as the last thing in main().
+// Run starts the Fyne application.
+// This MUST be called from main (blocking).
 func (t *Tray) Run() {
-	systray.Run(t.onReady, t.onExit)
-}
-
-// Quit stops the system tray and exits the application.
-func (t *Tray) Quit() {
-	systray.Quit()
-}
-
-// UpdateStatus updates the tray tooltip/status text.
-func (t *Tray) UpdateStatus(status string) {
-	systray.SetTooltip(status)
-}
-
-// onReady is called when systray is ready.
-// Sets up the icon and menu.
-func (t *Tray) onReady() {
-	systray.SetTitle("SambaSync")
-	systray.SetTooltip("SambaSync - Idle")
-
-	// TODO: Set icon
-	// systray.SetIcon(icon.Data)
-
-	// Create menu
-	t.menu = NewMenu()
+	t.menu = NewMenu(t)
 	t.menu.Build()
 
-	// Listen for menu events
-	go t.handleMenuEvents()
+	log.Println("System tray ready (Fyne)")
+	t.app.Run()
 
-	log.Println("System tray ready")
-}
-
-// onExit is called when systray is exiting.
-func (t *Tray) onExit() {
 	close(t.events)
 	log.Println("System tray exited")
 }
 
-// handleMenuEvents listens to menu item clicks and emits events.
-func (t *Tray) handleMenuEvents() {
-	for {
-		select {
-		case <-t.menu.syncNow.ClickedCh:
-			t.events <- EventSyncNow
+// Quit cleanly exits the application.
+func (t *Tray) Quit() {
+	t.app.Quit()
+}
 
-		case <-t.menu.status.ClickedCh:
-			t.events <- EventStatus
+// UpdateStatus updates the tray tooltip/status text.
+func (t *Tray) UpdateStatus(status string) {
+	t.menu.SetStatusText(status)
+}
 
-		case <-t.menu.settings.ClickedCh:
-			t.events <- EventSettings
-
-		case <-t.menu.quit.ClickedCh:
-			t.events <- EventQuit
-			return
-		}
-	}
+func(t *Tray) App() fyne.App {
+	return t.app
 }

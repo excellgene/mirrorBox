@@ -1,50 +1,68 @@
 package tray
 
 import (
-	"github.com/getlantern/systray"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/driver/desktop"
 )
 
 // Menu holds references to system tray menu items.
 type Menu struct {
-	syncNow  *systray.MenuItem
-	status   *systray.MenuItem
-	settings *systray.MenuItem
-	quit     *systray.MenuItem
+	tray   *Tray
+	menu   *fyne.Menu
+	status *fyne.MenuItem
 }
 
 // NewMenu creates a new menu structure.
-func NewMenu() *Menu {
-	return &Menu{}
+func NewMenu(tray *Tray) *Menu {
+	return &Menu{tray: tray}
 }
 
 // Build creates the menu items and adds them to the tray.
 func (m *Menu) Build() {
-	// Main actions
-	m.syncNow = systray.AddMenuItem("Sync Now", "Run sync immediately")
-	m.status = systray.AddMenuItem("Status", "Show sync status")
-
-	systray.AddSeparator()
-
-	// Configuration
-	m.settings = systray.AddMenuItem("Settings", "Open settings")
-
-	systray.AddSeparator()
-
-	// Exit
-	m.quit = systray.AddMenuItem("Quit", "Exit SambaSync")
-}
-
-// SetSyncEnabled enables or disables the sync now button.
-// Useful when a sync is already running.
-func (m *Menu) SetSyncEnabled(enabled bool) {
-	if enabled {
-		m.syncNow.Enable()
-	} else {
-		m.syncNow.Disable()
+	desktopApp, ok := m.tray.app.(desktop.App)
+	if !ok {
+		return
 	}
+
+	syncNow := fyne.NewMenuItem("Sync Now", func() {
+		m.tray.events <- EventSyncNow
+	})
+
+	m.status = fyne.NewMenuItem("Status: Idle", func() {
+		m.tray.events <- EventStatus
+	})
+
+	settings := fyne.NewMenuItem("Settings", func() {
+		m.tray.events <- EventSettings
+	})
+
+	quit := fyne.NewMenuItem("Quit", func() {
+		m.tray.events <- EventQuit
+		m.tray.Quit()
+	})
+
+	m.menu = fyne.NewMenu(
+		"SambaSync",
+		syncNow,
+		m.status,
+		fyne.NewMenuItemSeparator(),
+		settings,
+		fyne.NewMenuItemSeparator(),
+		quit,
+	)
+
+	desktopApp.SetSystemTrayMenu(m.menu)
 }
 
 // SetStatusText updates the status menu item text.
 func (m *Menu) SetStatusText(text string) {
-	m.status.SetTitle(text)
+	if m.status == nil || m.menu == nil {
+		return
+	}
+
+	m.status.Label = "Status: " + text
+
+	if desktopApp, ok := m.tray.app.(desktop.App); ok {
+		desktopApp.SetSystemTrayMenu(m.menu)
+	}
 }

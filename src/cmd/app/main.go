@@ -15,7 +15,6 @@ import (
 func main() {
 	log.Println("Starting SambaSync...")
 
-	// Initialize config
 	configPath := getConfigPath()
 	configStore := config.NewStore(configPath)
 
@@ -23,56 +22,49 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
-
-	// Initialize application state
 	appState := app.NewState()
 
-	// Create job factory with SMB client factory
 	jobFactory := app.NewJobFactory(func(cfg smb.Config) smb.Client {
-		// In production, replace with real SMB client
+		// Replace with real SMB client in production
 		return smb.NewMockClient(cfg)
 	})
 
-	// Create jobs from config
 	jobs, err := jobFactory.CreateFromConfig(cfg)
 	if err != nil {
 		log.Fatalf("Failed to create jobs: %v", err)
 	}
 
-	// Register jobs with state
 	for _, job := range jobs {
 		appState.AddJob(job)
 		log.Printf("Registered job: %s", job.Name)
 	}
 
-	// Initialize dispatcher
 	dispatcher := app.NewDispatcher(appState)
 
-	// Start scheduler if interval is configured
 	if cfg.CheckInterval > 0 {
 		log.Printf("Starting scheduler with interval: %v", cfg.CheckInterval)
 		dispatcher.StartScheduler(cfg.CheckInterval)
 	}
-
-	// Initialize UI components
-	settingsWindow := ui.NewSettingsWindow(cfg, configStore)
-	statusWindow := ui.NewStatusWindow(appState)
-
-	// Initialize system tray
 	systemTray := tray.New()
 
-	// Handle tray events
-	go handleTrayEvents(systemTray, dispatcher, settingsWindow, statusWindow)
+	settingsWindow := ui.NewSettingsWindow(
+		systemTray.App(),
+		cfg,
+		configStore,
+	)
 
-	// Listen to dispatcher events and update UI
+	statusWindow := ui.NewStatusWindow(
+		systemTray.App(),
+		appState,
+	)
+
+	go handleTrayEvents(systemTray, dispatcher, settingsWindow, statusWindow)
 	go handleDispatcherEvents(dispatcher, statusWindow, systemTray)
 
 	log.Println("SambaSync started successfully")
 
-	// Run system tray (blocking)
 	systemTray.Run()
 
-	// Cleanup on exit
 	log.Println("Shutting down...")
 	dispatcher.Stop()
 	log.Println("Goodbye!")
@@ -114,25 +106,21 @@ func handleDispatcherEvents(
 	systemTray *tray.Tray,
 ) {
 	for event := range dispatcher.Events() {
-		// Update status window
 		status.OnJobEvent(event)
-
-		// Update tray tooltip
-		statusText := formatJobStatus(event)
-		systemTray.UpdateStatus(statusText)
+		systemTray.UpdateStatus(formatJobStatus(event))
 	}
 }
 
 // formatJobStatus creates a human-readable status string.
 func formatJobStatus(event app.JobEvent) string {
 	switch event.Status {
-	case 0: // StatusIdle
+	case 0:
 		return "SambaSync - Idle"
-	case 1: // StatusRunning
+	case 1:
 		return "SambaSync - Syncing..."
-	case 2: // StatusSuccess
+	case 2:
 		return "SambaSync - Last sync successful"
-	case 3: // StatusError
+	case 3:
 		return "SambaSync - Last sync failed"
 	default:
 		return "SambaSync"
@@ -147,8 +135,6 @@ func getConfigPath() string {
 		log.Fatalf("Failed to get home directory: %v", err)
 	}
 
-	// Use ~/.config/sambasync/config.json on Unix-like systems
-	// Use %APPDATA%/sambasync/config.json on Windows
 	configDir := filepath.Join(homeDir, ".config", "sambasync")
 	return filepath.Join(configDir, "config.json")
 }
