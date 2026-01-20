@@ -1,6 +1,6 @@
 # SambaSync
 
-Cross platform tool to sync folder accross network via samba
+Cross platform tool to sync folders periodically
 
 
 ## Build
