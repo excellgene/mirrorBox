@@ -22,6 +22,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
+
 	appState := app.NewState()
 
 	jobFactory := app.NewJobFactory(func(cfg smb.Config) smb.Client {

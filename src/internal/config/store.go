@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -19,19 +20,18 @@ func NewStore(configPath string) *Store {
 	}
 }
 
-// Load reads configuration from disk.
-// Returns default config if file doesn't exist.
 func (s *Store) Load() (*Config, error) {
 	data, err := os.ReadFile(s.configPath)
+
 	if err != nil {
 		if os.IsNotExist(err) {
-			// Return default config if file doesn't exist
 			return DefaultConfig(), nil
 		}
 		return nil, fmt.Errorf("read config: %w", err)
 	}
 
 	var cfg Config
+
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		return nil, fmt.Errorf("parse config: %w", err)
 	}
@@ -39,7 +39,6 @@ func (s *Store) Load() (*Config, error) {
 	return &cfg, nil
 }
 
-// Save writes configuration to disk.
 func (s *Store) Save(cfg *Config) error {
 	// Ensure directory exists
 	dir := filepath.Dir(s.configPath)
@@ -55,6 +54,10 @@ func (s *Store) Save(cfg *Config) error {
 	if err := os.WriteFile(s.configPath, data, 0644); err != nil {
 		return fmt.Errorf("write config: %w", err)
 	}
+
+	log.Printf("Config saved to %s", s.configPath)
+	log.Printf("Config content: %s", string(data))
+
 
 	return nil
 }

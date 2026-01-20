@@ -23,14 +23,15 @@ func NewJobFactory(smbClientFactory func(cfg smb.Config) smb.Client) *JobFactory
 func (f *JobFactory) CreateFromConfig(cfg *config.Config) ([]*syncpkg.Job, error) {
 	var jobs []*syncpkg.Job
 
-	for _, jobCfg := range cfg.SyncJobs {
+	for _, jobCfg := range cfg.Folders {
 		if !jobCfg.Enabled {
 			continue
 		}
 
+		name := "Sync " + jobCfg.SourcePath + " to " + jobCfg.DestinationPath
 		job, err := f.createJob(jobCfg)
 		if err != nil {
-			return nil, fmt.Errorf("create job %s: %w", jobCfg.Name, err)
+			return nil, fmt.Errorf("create job %s: %w", name, err)
 		}
 
 		jobs = append(jobs, job)
@@ -40,9 +41,9 @@ func (f *JobFactory) CreateFromConfig(cfg *config.Config) ([]*syncpkg.Job, error
 }
 
 // createJob creates a single sync job from config.
-func (f *JobFactory) createJob(cfg config.SyncJobConfig) (*syncpkg.Job, error) {
+func (f *JobFactory) createJob(cfg config.FolderToSync) (*syncpkg.Job, error) {
 	job := syncpkg.NewJob(
-		cfg.Name,
+		"Sync " + cfg.SourcePath + " to " + cfg.DestinationPath,
 		cfg.SourcePath,
 		cfg.DestinationPath,
 	)

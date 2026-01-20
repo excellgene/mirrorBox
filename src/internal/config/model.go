@@ -2,26 +2,24 @@ package config
 
 import "time"
 
-type Config struct {
-	SyncJobs []SyncJobConfig `json:"sync_jobs"`
-	CheckInterval time.Duration `json:"check_interval"`
-	LogLevel string `json:"log_level"`
+type FolderToSync struct {
+	SourcePath      string `json:"SourcePath"`
+	DestinationPath string `json:"DestinationPath"`
+	Enabled         bool   `json:"Enabled"`
 }
 
-// SyncJobConfig defines a single sync job configuration.
-type SyncJobConfig struct {
-	Name string `json:"name"`
-	SourcePath string `json:"source_path"`
-	DestinationPath string `json:"destination_path"`
-	Enabled bool `json:"enabled"`
-	Schedule string `json:"schedule"`
+// Config defines the application configuration structure.
+type Config struct {
+	CheckInterval time.Duration  `json:"check_interval"`
+	StartAtBoot   bool           `json:"start_at_boot"`
+	Folders       []FolderToSync `json:"folders"`
 }
 
 // DefaultConfig returns a sensible default configuration.
 func DefaultConfig() *Config {
 	return &Config{
-		SyncJobs:      []SyncJobConfig{},
 		CheckInterval: 5 * time.Minute,
-		LogLevel:      "info",
+		StartAtBoot:   false,
+		Folders:       []FolderToSync{},
 	}
 }
