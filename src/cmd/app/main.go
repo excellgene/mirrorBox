@@ -7,7 +7,6 @@ import (
 
 	"excellgene.com/symbaSync/internal/app"
 	"excellgene.com/symbaSync/internal/config"
-	"excellgene.com/symbaSync/internal/infra/smb"
 	"excellgene.com/symbaSync/internal/tray"
 	"excellgene.com/symbaSync/internal/ui"
 )
@@ -25,10 +24,7 @@ func main() {
 
 	appState := app.NewState()
 
-	jobFactory := app.NewJobFactory(func(cfg smb.Config) smb.Client {
-		// Replace with real SMB client in production
-		return smb.NewMockClient(cfg)
-	})
+	jobFactory := app.NewJobFactory()
 
 	jobs, err := jobFactory.CreateFromConfig(cfg)
 	if err != nil {
@@ -48,15 +44,17 @@ func main() {
 	}
 	systemTray := tray.New()
 
+	statusWindow := ui.NewStatusWindow(
+		systemTray.App(),
+		appState,
+	)
+
 	settingsWindow := ui.NewSettingsWindow(
 		systemTray.App(),
 		cfg,
 		configStore,
-	)
-
-	statusWindow := ui.NewStatusWindow(
-		systemTray.App(),
 		appState,
+		statusWindow,
 	)
 
 	go handleTrayEvents(systemTray, dispatcher, settingsWindow, statusWindow)

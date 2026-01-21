@@ -12,8 +12,6 @@ type Store struct {
 	configPath string
 }
 
-// NewStore creates a new config store.
-// configPath should be an absolute path to the config file.
 func NewStore(configPath string) *Store {
 	return &Store{
 		configPath: configPath,

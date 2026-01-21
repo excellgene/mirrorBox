@@ -121,9 +121,8 @@ func (d *Dispatcher) runJob(job *syncpkg.Job) {
 	}
 
 	select {
-	case d.events <- event:
-	case <-d.ctx.Done():
-		// Dispatcher is shutting down
+		case d.events <- event:
+		case <-d.ctx.Done():
 	}
 
 	if err != nil {

@@ -23,7 +23,6 @@ type StatusWindow struct {
 }
 
 // NewStatusWindow creates a new status window.
-// IMPORTANT: fyne.App is injected.
 func NewStatusWindow(app fyne.App, state *app.State) *StatusWindow {
 	return &StatusWindow{
 		app:   app,

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"excellgene.com/symbaSync/internal/infra/fs"
+	"excellgene.com/symbaSync/internal/sync/fs"
 )
 
 // JobStatus represents the current state of a sync job.
@@ -44,8 +44,10 @@ func NewJob(name, sourcePath, destPath string) *Job {
 		SourcePath:      sourcePath,
 		DestinationPath: destPath,
 		sourceWalker:    fs.NewLocalWalker(sourcePath),
-		differ: NewDiffer(),
-		status: StatusIdle,
+		destWalker:      fs.NewLocalWalker(destPath),
+		differ:          NewDiffer(),
+		syncer:          NewSyncer(fs.NewLocalCopier(true)),
+		status:          StatusIdle,
 	}
 }
 

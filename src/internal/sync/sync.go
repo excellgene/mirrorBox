@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"excellgene.com/symbaSync/internal/infra/smb"
+	"excellgene.com/symbaSync/internal/sync/fs"
 )
 
 type SyncResult struct {
@@ -18,13 +18,13 @@ type SyncResult struct {
 }
 
 type Syncer struct {
-	smbClient smb.Client
+	copier fs.Copier
 }
 
-// NewSyncer creates a new syncer with the given SMB client.
-func NewSyncer(smbClient smb.Client) *Syncer {
+// NewSyncer creates a new syncer with a file copier.
+func NewSyncer(copier fs.Copier) *Syncer {
 	return &Syncer{
-		smbClient: smbClient,
+		copier: copier,
 	}
 }
 
@@ -82,30 +82,17 @@ func (s *Syncer) create(ctx context.Context, diff FileDiff, sourcePath, destPath
 		return fmt.Errorf("no source file info")
 	}
 
-	localPath := filepath.Join(sourcePath, diff.Path)
-	remotePath := filepath.Join(destPath, diff.Path)
+	srcPath := filepath.Join(sourcePath, diff.Path)
+	dstPath := filepath.Join(destPath, diff.Path)
 
 	// If it's a directory, just create it
 	if diff.Source.IsDir {
-		return s.smbClient.MkdirAll(ctx, remotePath)
+		return os.MkdirAll(dstPath, 0755)
 	}
 
-	// Ensure parent directory exists
-	parentDir := filepath.Dir(remotePath)
-	if err := s.smbClient.MkdirAll(ctx, parentDir); err != nil {
-		return fmt.Errorf("create parent dir: %w", err)
-	}
-
-	// Open local file
-	file, err := os.Open(localPath)
-	if err != nil {
-		return fmt.Errorf("open source file: %w", err)
-	}
-	defer file.Close()
-
-	// Upload to SMB
-	if err := s.smbClient.Upload(ctx, remotePath, file, diff.Source.Size); err != nil {
-		return fmt.Errorf("upload file: %w", err)
+	// Use the copier to copy the file (it handles creating parent directories)
+	if err := s.copier.Copy(srcPath, dstPath); err != nil {
+		return fmt.Errorf("copy file: %w", err)
 	}
 
 	return nil
@@ -119,6 +106,6 @@ func (s *Syncer) update(ctx context.Context, diff FileDiff, sourcePath, destPath
 
 // delete handles removing a file or directory from destination.
 func (s *Syncer) delete(ctx context.Context, diff FileDiff, destPath string) error {
-	remotePath := filepath.Join(destPath, diff.Path)
-	return s.smbClient.Delete(ctx, remotePath)
+	targetPath := filepath.Join(destPath, diff.Path)
+	return os.RemoveAll(targetPath)
 }

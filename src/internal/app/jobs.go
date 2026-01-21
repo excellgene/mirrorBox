@@ -4,18 +4,14 @@ import (
 	"fmt"
 
 	"excellgene.com/symbaSync/internal/config"
-	"excellgene.com/symbaSync/internal/infra/smb"
 	syncpkg "excellgene.com/symbaSync/internal/sync"
 )
 
 type JobFactory struct {
-	smbClientFactory func(cfg smb.Config) smb.Client
 }
 
-func NewJobFactory(smbClientFactory func(cfg smb.Config) smb.Client) *JobFactory {
-	return &JobFactory{
-		smbClientFactory: smbClientFactory,
-	}
+func NewJobFactory() *JobFactory {
+	return &JobFactory{}
 }
 
 // CreateFromConfig creates sync jobs from configuration.
