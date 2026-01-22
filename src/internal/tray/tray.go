@@ -38,7 +38,6 @@ func (t *Tray) Events() <-chan Event {
 }
 
 // Run starts the Fyne application.
-// This MUST be called from main (blocking).
 func (t *Tray) Run() {
 	t.menu = NewMenu(t)
 	t.menu.Build()

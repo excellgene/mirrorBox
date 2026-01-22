@@ -58,7 +58,7 @@ func main() {
 	)
 
 	go handleTrayEvents(systemTray, dispatcher, settingsWindow, statusWindow)
-	go handleDispatcherEvents(dispatcher, statusWindow, systemTray)
+	go handleDispatcherEvents(dispatcher, statusWindow, settingsWindow, systemTray)
 
 	log.Println("SambaSync started successfully")
 
@@ -102,10 +102,12 @@ func handleTrayEvents(
 func handleDispatcherEvents(
 	dispatcher *app.Dispatcher,
 	status *ui.StatusWindow,
+	settings *ui.SettingsWindow,
 	systemTray *tray.Tray,
 ) {
 	for event := range dispatcher.Events() {
 		status.OnJobEvent(event)
+		settings.UpdateJobStatus()
 		systemTray.UpdateStatus(formatJobStatus(event))
 	}
 }

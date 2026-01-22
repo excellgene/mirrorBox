@@ -402,6 +402,7 @@ func formatJobStatus(status syncpkg.JobStatus) string {
 }
 
 // refreshStatus updates the status widget with current job status.
+// Must be called from the main UI thread.
 func (w *SettingsWindow) refreshStatus() {
 	if w.statusWidget != nil {
 		w.statusWidget.SetText(w.getLastJobStatus())
@@ -484,7 +485,6 @@ func (w *SettingsWindow) Show() {
 
 	// Refresh status when window is shown
 	w.refreshStatus()
-
 	w.window.Show()
 	w.window.RequestFocus()
 	log.Println("settings window opened")
@@ -506,4 +506,15 @@ func (w *SettingsWindow) OnSave(newConfig *config.Config) error {
 // GetConfig returns the current configuration.
 func (w *SettingsWindow) GetConfig() *config.Config {
 	return w.config
+}
+
+// UpdateJobStatus updates the job status display.
+// This method is safe to call from any goroutine (like the dispatcher event handler).
+// It marshals the update to the main UI thread.
+func (w *SettingsWindow) UpdateJobStatus() {
+	// This is the boundary where background goroutines meet UI updates
+	// Only wrap here, not in refreshStatus itself
+	fyne.Do(func() {
+		w.refreshStatus()
+	})
 }
