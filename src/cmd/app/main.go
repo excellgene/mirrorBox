@@ -129,7 +129,6 @@ func formatJobStatus(event app.JobEvent) string {
 }
 
 // getConfigPath returns the path to the config file.
-// Uses platform-specific config directory.
 func getConfigPath() string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {

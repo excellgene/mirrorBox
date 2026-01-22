@@ -5,6 +5,9 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/theme"
+
+	"excellgene.com/symbaSync/internal/ui/icons"
 )
 
 // Event represents a user action from the system tray.
@@ -19,9 +22,10 @@ const (
 
 // Tray manages the system tray icon and menu.
 type Tray struct {
-	app    fyne.App
-	events chan Event
-	menu   *Menu
+	app                fyne.App
+	events             chan Event
+	menu               *Menu
+	unregisterCallback func()
 }
 
 // New creates a new tray manager.
@@ -30,6 +34,14 @@ func New() *Tray {
 		app:    app.NewWithID("com.excellgene.sambasync"),
 		events: make(chan Event, 10),
 	}
+}
+
+// getTrayIcon returns the appropriate icon based on the system theme.
+func (t *Tray) getTrayIcon() fyne.Resource {
+	if t.app.Settings().ThemeVariant() == theme.VariantDark {
+		return icons.TrayWhite()
+	}
+	return icons.TrayBlack()
 }
 
 // Events returns a channel for receiving tray events.
@@ -59,6 +71,6 @@ func (t *Tray) UpdateStatus(status string) {
 	t.menu.SetStatusText(status)
 }
 
-func(t *Tray) App() fyne.App {
+func (t *Tray) App() fyne.App {
 	return t.app
 }
