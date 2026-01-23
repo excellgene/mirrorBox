@@ -1,4 +1,3 @@
 .claude
 src/bin/*
 .DS_Store
-go.sum
