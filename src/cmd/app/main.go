@@ -9,6 +9,7 @@ import (
 	"excellgene.com/symbaSync/internal/config"
 	"excellgene.com/symbaSync/internal/tray"
 	"excellgene.com/symbaSync/internal/ui"
+	"fyne.io/fyne/v2"
 )
 
 func main() {
@@ -84,11 +85,15 @@ func handleTrayEvents(
 
 		case tray.EventSettings:
 			log.Println("User opened settings")
-			settings.Show()
+			fyne.Do(func() {
+				settings.Show()
+			})
 
 		case tray.EventStatus:
 			log.Println("User opened status")
-			status.Show()
+			fyne.Do(func() {
+				status.Show()
+			})
 
 		case tray.EventQuit:
 			log.Println("User quit application")
@@ -106,9 +111,11 @@ func handleDispatcherEvents(
 	systemTray *tray.Tray,
 ) {
 	for event := range dispatcher.Events() {
-		status.OnJobEvent(event)
-		settings.UpdateJobStatus()
-		systemTray.UpdateStatus(formatJobStatus(event))
+		fyne.Do(func() {
+			status.OnJobEvent(event)
+			settings.UpdateJobStatus()
+			systemTray.UpdateStatus(formatJobStatus(event))
+		})
 	}
 }
 

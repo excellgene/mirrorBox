@@ -509,11 +509,7 @@ func (w *SettingsWindow) GetConfig() *config.Config {
 }
 
 // UpdateJobStatus updates the job status display.
-// This method is safe to call from any goroutine (like the dispatcher event handler).
-// It marshals the update to the main UI thread.
 func (w *SettingsWindow) UpdateJobStatus() {
-	// This is the boundary where background goroutines meet UI updates
-	// Only wrap here, not in refreshStatus itself
 	fyne.Do(func() {
 		w.refreshStatus()
 	})
