@@ -1,40 +1,52 @@
-name: Relase
+name: Release
 
 on:
     push:
         branches: ["production"]
 
 jobs:
-    release:
-        strategy:
-            matrix:
-                matrix:
-                    os: [windows-latest, macos-latest]
-        runs-on: ${{ matrix.os }}
-        defaults:
-            run:
-                working-directory: src/cmd/app
+  release:
+    strategy:
+        matrix:
+            os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+        run:
+            working-directory: src/cmd/app
 
-        steps:
-            - uses: actions/checkout@v4
+    steps:
+        - uses: actions/checkout@v4
 
-            - uses: actions/setup-go@v5
-              with:
-                  go-version: "1.22"
+        - uses: actions/setup-go@v5
+          with:
+              go-version: "1.22"
 
-            - name: Install Fyne
-              run: go install fyne.io/fyne/v2/cmd/fyne@latest
+        - name: Install Fyne
+          run: go install fyne.io/fyne/v2/cmd/fyne@latest
 
-            - name: Package app
-              run: |
-                  # fyne package -name sambaSync -os darwin -icon ../../internal/ui/icons/appicon.png 
-                  fyne package \
-                    -name sambaSync \
-                    -icon ../../internal/app/appicon.png \
-                    -os ${{ matrix.os == 'windows-latest' && 'windows' || 'darwin' }} \
+        - name: Package app
+          run: |
+              # fyne package -name sambaSync -os darwin -icon ../../internal/ui/icons/appicon.png 
+              fyne package \
+                -name sambaSync \
+                -icon ../../internal/app/appicon.png \
+                -os ${{ matrix.os == 'windows-latest' && 'windows' || 'darwin' }} \
 
-            - name: Upload artifact
-              uses: actions/upload-artifact@v4
-              with:
-                  name: sambaSync-${{ runner.os }}
-                  path: src/*.*
+        - name: Upload artifact
+          uses: actions/upload-artifact@v4
+          with:
+              name: sambaSync-${{ runner.os }}
+              path: src/*.*
+  publish:
+      needs: release
+      runs-on: ubuntu-latest
+      steps:
+          - uses: actions/download-artifact@v4
+
+          - uses: softprops/action-gh-release@v2
+            with:
+                tag_name: v${{ github.run_number }}
+                name: sambaSync v${{ github.run_number }}
+                files: |
+                    **/*.msi
+                    **/*.pkg
