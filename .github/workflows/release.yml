@@ -33,12 +33,13 @@ jobs:
         run: go install fyne.io/tools/cmd/fyne@latest
 
       - name: Package app
+        shell: bash
         run: |
           fyne package \
             -name sambaSync \
             -icon ../../internal/ui/icons/appicon.png \
             -os ${{ matrix.fyne_os }} \
-            .
+            ./
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
