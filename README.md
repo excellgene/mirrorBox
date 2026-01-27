@@ -3,13 +3,28 @@
 Cross platform tool to sync folders periodically
 
 
-## Build
+## Build & Run
 
-1.
+1. Run the application
+
     Windows
     
-        go build -o .\src\bin\sambaSync.exe .\src\cmd\app
+        go run .\src\cmd\app\main.go
 
     MacOS
 
-        go build -o src/bin/sambaSync ./src/cmd/app
+        go run ./src/cmd/app/main.go
+
+1. Build a release version
+
+    Windows
+
+        cd src/cmd/app
+
+        fyne package -name sambaSync -os windows -icon ../../internal/ui/icons/appicon.png 
+
+    MacOS
+
+        cd src/cmd/app
+
+        fyne package -name sambaSync -os darwin -icon ../../internal/ui/icons/appicon.png 
