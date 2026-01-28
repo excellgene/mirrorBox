@@ -65,7 +65,7 @@ func (m *Menu) Build() {
 	m.tray.app.Lifecycle().SetOnStarted(func(){
 		go func(){
 			time.Sleep(200 * time.Millisecond)
-			platform.SetActivationPolicy()
+			platform.HideDockIcon()
 		}()
 	})
 

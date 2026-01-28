@@ -17,6 +17,6 @@ import "C"
 
 // hides the application icon from the macOS dock.
 // This makes the app behave as a "menu bar only" application.
-func SetActivationPolicy() {
+func HideDockIcon() {
 	C.setActivationPolicy()
 }
