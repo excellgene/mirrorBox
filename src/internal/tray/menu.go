@@ -3,6 +3,9 @@ package tray
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
+
+	"time"
+	"excellgene.com/mirrorBox/internal/platform"
 )
 
 // Menu holds references to system tray menu items.
@@ -46,7 +49,7 @@ func (m *Menu) Build() {
 	})
 
 	m.menu = fyne.NewMenu(
-		"SambaSync",
+		"MirrorBox",
 		syncNow,
 		m.status,
 		fyne.NewMenuItemSeparator(),
@@ -58,6 +61,14 @@ func (m *Menu) Build() {
 	m.tray.app.Settings().AddListener(func(s fyne.Settings) {
 		m.UpdateIcon()
 	})
+
+	m.tray.app.Lifecycle().SetOnStarted(func(){
+		go func(){
+			time.Sleep(200 * time.Millisecond)
+			platform.SetActivationPolicy()
+		}()
+	})
+
 
 	desktopApp.SetSystemTrayMenu(m.menu)
 }

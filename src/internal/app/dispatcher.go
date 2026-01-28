@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	syncpkg "excellgene.com/symbaSync/internal/sync"
+	syncpkg "excellgene.com/mirrorBox/internal/sync"
 )
 
 // JobEvent represents an event from job execution.

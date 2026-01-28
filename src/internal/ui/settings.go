@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	"excellgene.com/symbaSync/internal/app"
-	"excellgene.com/symbaSync/internal/config"
-	syncpkg "excellgene.com/symbaSync/internal/sync"
+	"excellgene.com/mirrorBox/internal/app"
+	"excellgene.com/mirrorBox/internal/config"
+	syncpkg "excellgene.com/mirrorBox/internal/sync"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -282,9 +282,9 @@ func NewFolderWindow(app fyne.App, cfg *config.Config, store *config.Store) fyne
 	return modal
 }
 
-// changeCheckInterval opens a modal to change the sync check interval.
-func (w *SettingsWindow) changeCheckInterval() {
-	modal := w.app.NewWindow("Change Check Interval")
+// opens general Settings modal
+func (w *SettingsWindow) changeGeneralSettings() {
+	modal := w.app.NewWindow("General Settings")
 
 	currentMinutes := int(w.config.CheckInterval.Minutes())
 
@@ -294,6 +294,9 @@ func (w *SettingsWindow) changeCheckInterval() {
 	minutesEntry.SetText(strconv.Itoa(currentMinutes))
 
 	infoLabel := widget.NewLabel(fmt.Sprintf("Current interval: %v", w.config.CheckInterval))
+
+	startAtBootCheck := widget.NewCheck("Start MirrorBox at login", nil)
+	startAtBootCheck.SetChecked(w.config.StartAtBoot)
 
 	saveButton := widget.NewButton("Save", func() {
 		minutes, err := strconv.Atoi(minutesEntry.Text)
@@ -306,6 +309,7 @@ func (w *SettingsWindow) changeCheckInterval() {
 		}
 
 		w.config.CheckInterval = time.Duration(minutes) * time.Minute
+		w.config.StartAtBoot = startAtBootCheck.Checked
 
 		if err := w.store.Save(w.config); err != nil {
 			log.Printf("Failed to save config: %v", err)
@@ -315,6 +319,20 @@ func (w *SettingsWindow) changeCheckInterval() {
 			)
 			return
 		}
+
+		reloadedCfg, err := w.store.Load()
+		if err != nil {
+			log.Printf("Failed to reload config: %v", err)
+			dialog.ShowError(
+				fmt.Errorf("failed to reload configuration: %w", err),
+				modal,
+			)
+			return
+		}
+
+		w.config = reloadedCfg
+		infoLabel.SetText(fmt.Sprintf("Current interval: %v", w.config.CheckInterval))
+		startAtBootCheck.SetChecked(w.config.StartAtBoot)
 
 		log.Printf("Updated check interval to %v", w.config.CheckInterval)
 
@@ -337,7 +355,11 @@ func (w *SettingsWindow) changeCheckInterval() {
 		infoLabel,
 		widget.NewLabel("Enter interval in minutes:"),
 		minutesEntry,
-		widget.NewLabel("Note: Application restart required for changes to take effect."),
+		widget.NewLabel("Note: Application restart required for interval changes to take effect."),
+		widget.NewSeparator(),
+		widget.NewLabelWithStyle("Startup", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		startAtBootCheck,
+		widget.NewLabel("Enable to launch MirrorBox automatically after you log in."),
 		widget.NewSeparator(),
 		container.NewGridWithColumns(2, cancelButton, saveButton),
 	)
@@ -413,7 +435,7 @@ func (w *SettingsWindow) refreshStatus() {
 // The window is created lazily and reused.
 func (w *SettingsWindow) Show() {
 	if w.window == nil {
-		w.window = w.app.NewWindow("SambaSync - Settings")
+		w.window = w.app.NewWindow("MirrorBox - Settings")
 		w.window.Resize(fyne.NewSize(600, 550))
 
 		// Create status widget for displaying last job status
@@ -435,9 +457,9 @@ func (w *SettingsWindow) Show() {
 				},
 			),
 			widget.NewButton(
-				"Change Check Interval",
+				"General Settings",
 				func() {
-					w.changeCheckInterval()
+					w.changeGeneralSettings()
 				},
 			),
 			widget.NewButton(

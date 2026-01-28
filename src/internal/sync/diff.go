@@ -1,7 +1,7 @@
 package sync
 
 import (
-	"excellgene.com/symbaSync/internal/sync/fs"
+	"excellgene.com/mirrorBox/internal/sync/fs"
 )
 
 

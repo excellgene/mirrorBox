@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"excellgene.com/symbaSync/internal/sync/fs"
+	"excellgene.com/mirrorBox/internal/sync/fs"
 )
 
 type SyncResult struct {

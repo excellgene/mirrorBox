@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"excellgene.com/symbaSync/internal/sync/fs"
+	"excellgene.com/mirrorBox/internal/sync/fs"
 )
 
 // JobStatus represents the current state of a sync job.

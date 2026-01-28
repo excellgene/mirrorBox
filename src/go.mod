@@ -1,4 +1,4 @@
-module excellgene.com/symbaSync
+module excellgene.com/mirrorBox
 
 go 1.22
 

@@ -5,17 +5,14 @@ import (
 	"os"
 	"path/filepath"
 
-	"excellgene.com/symbaSync/internal/app"
-	"excellgene.com/symbaSync/internal/config"
-	"excellgene.com/symbaSync/internal/platform"
-	"excellgene.com/symbaSync/internal/tray"
-	"excellgene.com/symbaSync/internal/ui"
+	"excellgene.com/mirrorBox/internal/app"
+	"excellgene.com/mirrorBox/internal/config"
+	"excellgene.com/mirrorBox/internal/tray"
+	"excellgene.com/mirrorBox/internal/ui"
 	"fyne.io/fyne/v2"
 )
 
 func main() {
-	log.Println("Starting SambaSync...")
-
 	configPath := getConfigPath()
 	configStore := config.NewStore(configPath)
 
@@ -45,7 +42,6 @@ func main() {
 		dispatcher.StartScheduler(cfg.CheckInterval)
 	}
 	systemTray := tray.New()
-	platform.HideDockIcon()
 
 	statusWindow := ui.NewStatusWindow(
 		systemTray.App(),
@@ -63,13 +59,8 @@ func main() {
 	go handleTrayEvents(systemTray, dispatcher, settingsWindow, statusWindow)
 	go handleDispatcherEvents(dispatcher, statusWindow, settingsWindow, systemTray)
 
-	log.Println("SambaSync started successfully")
-
 	systemTray.Run()
-
-	log.Println("Shutting down...")
 	dispatcher.Stop()
-	log.Println("Goodbye!")
 }
 
 // handleTrayEvents processes user actions from system tray.
@@ -99,7 +90,9 @@ func handleTrayEvents(
 
 		case tray.EventQuit:
 			log.Println("User quit application")
-			systemTray.Quit()
+			fyne.Do(func() {
+				systemTray.Quit()
+			})
 			return
 		}
 	}
@@ -125,15 +118,15 @@ func handleDispatcherEvents(
 func formatJobStatus(event app.JobEvent) string {
 	switch event.Status {
 	case 0:
-		return "SambaSync - Idle"
+		return "MirrorBox - Idle"
 	case 1:
-		return "SambaSync - Syncing..."
+		return "MirrorBox - Syncing..."
 	case 2:
-		return "SambaSync - Last sync successful"
+		return "MirrorBox - Last sync successful"
 	case 3:
-		return "SambaSync - Last sync failed"
+		return "MirrorBox - Last sync failed"
 	default:
-		return "SambaSync"
+		return "MirrorBox"
 	}
 }
 
@@ -144,6 +137,6 @@ func getConfigPath() string {
 		log.Fatalf("Failed to get home directory: %v", err)
 	}
 
-	configDir := filepath.Join(homeDir, ".config", "sambasync")
+	configDir := filepath.Join(homeDir, ".config", "mirrorbox")
 	return filepath.Join(configDir, "config.json")
 }

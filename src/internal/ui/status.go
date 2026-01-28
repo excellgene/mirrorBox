@@ -5,8 +5,8 @@ import (
 	"log"
 	"strings"
 
-	"excellgene.com/symbaSync/internal/app"
-	syncpkg "excellgene.com/symbaSync/internal/sync"
+	"excellgene.com/mirrorBox/internal/app"
+	syncpkg "excellgene.com/mirrorBox/internal/sync"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"

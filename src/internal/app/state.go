@@ -3,7 +3,7 @@ package app
 import (
 	"sync"
 
-	syncpkg "excellgene.com/symbaSync/internal/sync"
+	syncpkg "excellgene.com/mirrorBox/internal/sync"
 )
 
 // State holds the runtime state of the application.

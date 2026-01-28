@@ -7,7 +7,8 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/theme"
 
-	"excellgene.com/symbaSync/internal/ui/icons"
+
+	"excellgene.com/mirrorBox/internal/ui/icons"
 )
 
 // Event represents a user action from the system tray.
@@ -29,7 +30,7 @@ type Tray struct {
 
 func New() *Tray {
 	return &Tray{
-		app:    app.NewWithID("com.excellgene.sambasync"),
+		app:    app.NewWithID("com.excellgene.mirrorBox"),
 		events: make(chan Event, 10),
 	}
 }
@@ -49,7 +50,6 @@ func (t *Tray) Events() <-chan Event {
 func (t *Tray) Run() {
 	t.menu = NewMenu(t)
 	t.menu.Build()
-
 	log.Println("System tray ready (Fyne)")
 	t.app.Run()
 

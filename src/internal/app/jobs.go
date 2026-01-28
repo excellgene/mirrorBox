@@ -3,8 +3,8 @@ package app
 import (
 	"fmt"
 
-	"excellgene.com/symbaSync/internal/config"
-	syncpkg "excellgene.com/symbaSync/internal/sync"
+	"excellgene.com/mirrorBox/internal/config"
+	syncpkg "excellgene.com/mirrorBox/internal/sync"
 )
 
 type JobFactory struct {
