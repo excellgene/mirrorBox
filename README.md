@@ -7,24 +7,10 @@ Cross platform tool to sync folders periodically
 
 1. Run the application
 
-    Windows
-    
-        go run .\src\cmd\app\main.go
+       go run ./src/cmd/app/main.go
 
-    MacOS
+1. Build package
 
-        go run ./src/cmd/app/main.go
+        cd src/
 
-1. Build a release version
-
-    Windows
-
-        cd src/cmd/app
-
-        fyne package -name sambaSync -os windows -icon ../../internal/ui/icons/appicon.png 
-
-    MacOS
-
-        cd src/cmd/app
-
-        fyne package -name sambaSync -os darwin -icon ../../internal/ui/icons/appicon.png 
+        fyne package -name mirrorBox -os darwin -icon ./internal/ui/icons/appicon.png ./cmd/app
