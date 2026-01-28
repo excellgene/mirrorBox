@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-SambaSync is a cross-platform folder synchronization tool built with Go and Fyne (GUI framework). It runs as a system tray application that periodically syncs configured folder pairs from source to destination.
+MirroxBox is a cross-platform folder synchronization tool built with Go and Fyne (GUI framework). It runs as a system tray application that periodically syncs configured folder pairs from source to destination.
 
 ## Build & Run Commands
 
@@ -32,10 +32,10 @@ Package for distribution (working directory must be `src/cmd/app/`):
 cd src/cmd/app
 
 # macOS
-fyne package -name sambaSync -os darwin -icon ../../internal/ui/icons/appicon.png --metadata LSUIElement=true
+fyne package -name mirrorBox -os darwin -icon ../../internal/ui/icons/appicon.png --metadata LSUIElement=true
 
 # Windows
-fyne package -name sambaSync -os windows -icon ../../internal/ui/icons/appicon.png
+fyne package -name mirrorBox -os windows -icon ../../internal/ui/icons/appicon.png
 ```
 
 **Note**: The dock icon is automatically hidden on macOS through `platform.HideDockIcon()` which uses CGO to call Objective-C's `NSApplicationActivationPolicyAccessory`. This makes the app appear only in the system tray, not in the dock.
@@ -47,7 +47,7 @@ fyne package -name sambaSync -os windows -icon ../../internal/ui/icons/appicon.p
 The application follows a layered architecture with clear separation of concerns:
 
 **Entry Point** (`src/cmd/app/main.go`):
-- Initializes config store from `~/.config/sambasync/config.json`
+- Initializes config store from `~/.config/mirrorbox/config.json`
 - Creates app state, job factory, and dispatcher
 - Sets up system tray, status window, and settings window
 - Coordinates communication via two event loops:
@@ -112,7 +112,7 @@ The application follows a layered architecture with clear separation of concerns
 
 ## Configuration
 
-Config location: `~/.config/sambasync/config.json`
+Config location: `~/.config/mirrorbox/config.json`
 
 Example structure:
 ```json

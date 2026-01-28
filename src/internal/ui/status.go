@@ -34,7 +34,7 @@ func NewStatusWindow(app fyne.App, state *app.State) *StatusWindow {
 // The window is created lazily and reused.
 func (w *StatusWindow) Show() {
 	if w.window == nil {
-		w.window = w.app.NewWindow("SambaSync - Status")
+		w.window = w.app.NewWindow("MirrorBox - Status")
 		w.window.Resize(fyne.NewSize(600, 500))
 
 		w.content = container.NewVBox()

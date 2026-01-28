@@ -39,4 +39,4 @@ jobs:
             pkg-config
 
       - name: Build
-        run: go build ./cmd/app
+        run: go build ./cmd/mirrorbox
