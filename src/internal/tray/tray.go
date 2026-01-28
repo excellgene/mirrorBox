@@ -20,7 +20,6 @@ const (
 	EventQuit
 )
 
-// Tray manages the system tray icon and menu.
 type Tray struct {
 	app                fyne.App
 	events             chan Event
@@ -28,7 +27,6 @@ type Tray struct {
 	unregisterCallback func()
 }
 
-// New creates a new tray manager.
 func New() *Tray {
 	return &Tray{
 		app:    app.NewWithID("com.excellgene.sambasync"),
@@ -36,7 +34,6 @@ func New() *Tray {
 	}
 }
 
-// getTrayIcon returns the appropriate icon based on the system theme.
 func (t *Tray) getTrayIcon() fyne.Resource {
 	if t.app.Settings().ThemeVariant() == theme.VariantDark {
 		return icons.TrayWhite()
@@ -49,7 +46,6 @@ func (t *Tray) Events() <-chan Event {
 	return t.events
 }
 
-// Run starts the Fyne application.
 func (t *Tray) Run() {
 	t.menu = NewMenu(t)
 	t.menu.Build()
@@ -61,12 +57,10 @@ func (t *Tray) Run() {
 	log.Println("System tray exited")
 }
 
-// Quit cleanly exits the application.
 func (t *Tray) Quit() {
 	t.app.Quit()
 }
 
-// UpdateStatus updates the tray tooltip/status text.
 func (t *Tray) UpdateStatus(status string) {
 	t.menu.SetStatusText(status)
 }

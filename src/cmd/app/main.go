@@ -7,6 +7,7 @@ import (
 
 	"excellgene.com/symbaSync/internal/app"
 	"excellgene.com/symbaSync/internal/config"
+	"excellgene.com/symbaSync/internal/platform"
 	"excellgene.com/symbaSync/internal/tray"
 	"excellgene.com/symbaSync/internal/ui"
 	"fyne.io/fyne/v2"
@@ -44,6 +45,7 @@ func main() {
 		dispatcher.StartScheduler(cfg.CheckInterval)
 	}
 	systemTray := tray.New()
+	platform.HideDockIcon()
 
 	statusWindow := ui.NewStatusWindow(
 		systemTray.App(),

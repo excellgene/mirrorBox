@@ -27,4 +27,4 @@ Cross platform tool to sync folders periodically
 
         cd src/cmd/app
 
-        fyne package -name sambaSync -os darwin -icon ../../internal/ui/icons/appicon.png 
+        fyne package -name sambaSync -os darwin -icon ../../internal/ui/icons/appicon.png --metadata LSUIElement=true
