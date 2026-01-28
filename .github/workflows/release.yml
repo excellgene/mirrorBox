@@ -45,7 +45,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sambaSync-${{ matrix.fyne_os }}
-          path: src/cmd/app/*.${{ matrix.ext }}
+          path: ./*.${{ matrix.ext }}
 
   publish:
     needs: release
@@ -55,8 +55,8 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}
-          name: sambaSync v${{ github.run_number }}
+          tag_name: ${{ github.ref_name }}
+          name: sambaSync ${{ github.ref_name }}
           files: |
             **/*.msi
             **/*.pkg
