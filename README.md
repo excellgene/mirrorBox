@@ -1,4 +1,4 @@
-# SambaSync
+# MirrorBox
 
 Cross platform tool to sync folders periodically
 
