@@ -97,8 +97,45 @@ func (s *Syncer) create(ctx context.Context, diff FileDiff, sourcePath, destPath
 }
 
 // update handles updating an existing file at destination.
+// Uses atomic rename pattern to avoid corrupting files on interruption.
 func (s *Syncer) update(ctx context.Context, diff FileDiff, sourcePath, destPath string) error {
-	return s.create(ctx, diff, sourcePath, destPath)
+	if diff.Source == nil {
+		return fmt.Errorf("no source file info")
+	}
+
+	srcPath := filepath.Join(sourcePath, diff.Path)
+	dstPath := filepath.Join(destPath, diff.Path)
+
+	if diff.Source.IsDir {
+		return os.MkdirAll(dstPath, 0755)
+	}
+
+	// Create temporary file in same directory as destination
+	// (same filesystem = atomic rename)
+	dstDir := filepath.Dir(dstPath)
+	tmpFile, err := os.CreateTemp(dstDir, ".mirrorbox-tmp-*")
+	if err != nil {
+		return fmt.Errorf("create temp file: %w", err)
+	}
+	tmpPath := tmpFile.Name()
+	tmpFile.Close()
+
+	// Clean up temp file on error
+	defer func() {
+		if err != nil {
+			os.Remove(tmpPath)
+		}
+	}()
+
+	if err = s.copier.Copy(srcPath, tmpPath); err != nil {
+		return fmt.Errorf("copy to temp: %w", err)
+	}
+
+	if err = os.Rename(tmpPath, dstPath); err != nil {
+		return fmt.Errorf("rename temp to dest: %w", err)
+	}
+
+	return nil
 }
 
 func (s *Syncer) delete(ctx context.Context, diff FileDiff, destPath string) error {
