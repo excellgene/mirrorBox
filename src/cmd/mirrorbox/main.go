@@ -38,7 +38,7 @@ func main() {
 	dispatcher := app.NewDispatcher(appState)
 
 	if cfg.CheckInterval > 0 {
-		log.Printf("Starting scheduler with interval: %v", cfg.CheckInterval)
+		log.Printf("Starting scheduler with interval: %d minutes", int(cfg.CheckInterval.Minutes()))
 		dispatcher.StartScheduler(cfg.CheckInterval)
 	}
 	systemTray := tray.New()

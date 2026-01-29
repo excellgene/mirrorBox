@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"time"
 
@@ -76,6 +77,29 @@ func (w *SettingsWindow) saveConfigAndReload() error {
 
 	if err := w.reloadJobs(); err != nil {
 		return fmt.Errorf("reload jobs: %w", err)
+	}
+
+	if w.config.StartAtBoot {
+		execPath, err := os.Executable()
+		if err != nil {
+			log.Printf("Failed to get executable path for auto-start: %v", err)
+			return err
+		}
+
+		err = app.EnableAutoStart("MirrorBox", execPath, w.config)
+		if err != nil {
+			log.Printf("Failed to enable auto-start: %v", err)
+			return err
+		}
+
+		log.Printf("Enabled MirrorBox to start at login")
+
+	} else {
+		err := app.DisableAutoStart("MirrorBox")
+		if err != nil {
+			log.Printf("Failed to disable auto-start: %v", err)
+		}
+		log.Printf("Disabled MirrorBox to start at login")
 	}
 
 	return nil
@@ -338,7 +362,8 @@ func (w *SettingsWindow) changeGeneralSettings() {
 	minutesEntry.SetPlaceHolder("Minutes")
 	minutesEntry.SetText(strconv.Itoa(currentMinutes))
 
-	infoLabel := widget.NewLabel(fmt.Sprintf("Current interval: %v", w.config.CheckInterval))
+	minutesInConfig := int(w.config.CheckInterval.Minutes())
+	infoLabel := widget.NewLabel(fmt.Sprintf("Current interval: %d minutes:", minutesInConfig))
 
 	startAtBootCheck := widget.NewCheck("Start MirrorBox at login", nil)
 	startAtBootCheck.SetChecked(w.config.StartAtBoot)
@@ -347,7 +372,7 @@ func (w *SettingsWindow) changeGeneralSettings() {
 		minutes, err := strconv.Atoi(minutesEntry.Text)
 		if err != nil || minutes <= 0 {
 			dialog.ShowError(
-				fmt.Errorf("please enter a valid number of minutes (greater than 0)"),
+				fmt.Errorf("please enter a valid number of minutes (greater than 0) or an integer"),
 				modal,
 			)
 			return
@@ -365,14 +390,14 @@ func (w *SettingsWindow) changeGeneralSettings() {
 			return
 		}
 
-		infoLabel.SetText(fmt.Sprintf("Current interval: %v", w.config.CheckInterval))
+		infoLabel.SetText(fmt.Sprintf("Current interval: %d minutes", minutesInConfig))
 		startAtBootCheck.SetChecked(w.config.StartAtBoot)
 
-		log.Printf("Updated check interval to %v and reloaded jobs", w.config.CheckInterval)
+		log.Printf("Updated check interval to %d minutes and reloaded jobs", minutesInConfig)
 
 		dialog.ShowInformation(
 			"Success",
-			fmt.Sprintf("Check interval updated to %v.\nRestart the application for changes to take effect.", w.config.CheckInterval),
+			fmt.Sprintf("Check interval updated to %d minutes", minutesInConfig),
 			modal,
 		)
 
@@ -389,7 +414,6 @@ func (w *SettingsWindow) changeGeneralSettings() {
 		infoLabel,
 		widget.NewLabel("Enter interval in minutes:"),
 		minutesEntry,
-		widget.NewLabel("Note: Application restart required for interval changes to take effect."),
 		widget.NewSeparator(),
 		widget.NewLabelWithStyle("Startup", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		startAtBootCheck,

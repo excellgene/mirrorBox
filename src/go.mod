@@ -2,7 +2,10 @@ module excellgene.com/mirrorBox
 
 go 1.22
 
-require fyne.io/fyne/v2 v2.7.2
+require (
+	fyne.io/fyne/v2 v2.7.2
+	github.com/emersion/go-autostart v0.0.0-20250403115856-34830d6457d2
+)
 
 require (
 	fyne.io/systray v1.12.0 // indirect

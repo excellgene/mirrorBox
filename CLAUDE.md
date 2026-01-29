@@ -131,6 +131,6 @@ Example structure:
 
 ## Go Module
 
-Module name: `excellgene.com/symbaSync`
+Module name: `excellgene.com/mirrorBox`
 Go version: 1.22
 Primary dependency: Fyne v2 (`fyne.io/fyne/v2`)
