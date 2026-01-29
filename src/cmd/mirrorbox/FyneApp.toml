@@ -1,0 +1,11 @@
+Website = "https://github.com/excellgene/mirrorBox"
+
+[Details]
+Icon = "Icon.png"
+Name = "MirrorBox"
+Categories = ["Utility"]
+ID = "com.excellgene.mirrorbox"
+Version = "1.0.0"
+Build = "build20250129"
+
+

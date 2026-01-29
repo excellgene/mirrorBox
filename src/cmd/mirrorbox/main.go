@@ -54,6 +54,7 @@ func main() {
 		configStore,
 		appState,
 		statusWindow,
+		jobFactory,
 	)
 
 	go handleTrayEvents(systemTray, dispatcher, settingsWindow, statusWindow)

@@ -26,6 +26,7 @@ type SettingsWindow struct {
 	store        *config.Store
 	state        *app.State
 	statusWindow *StatusWindow
+	jobFactory   *app.JobFactory
 }
 
 // NewSettingsWindow creates a new settings window.
@@ -35,6 +36,7 @@ func NewSettingsWindow(
 	store *config.Store,
 	state *app.State,
 	statusWindow *StatusWindow,
+	jobFactory *app.JobFactory,
 ) *SettingsWindow {
 	return &SettingsWindow{
 		app:          app,
@@ -42,11 +44,44 @@ func NewSettingsWindow(
 		store:        store,
 		state:        state,
 		statusWindow: statusWindow,
+		jobFactory:   jobFactory,
 	}
 }
 
-func deleteFolder(cfg *config.Config, store *config.Store, index int, refreshFunc func()) {
-	// Remove folder from config by index
+// This is called automatically after config changes.
+func (w *SettingsWindow) reloadJobs() error {
+	// Create new jobs from current config
+	newJobs, err := w.jobFactory.CreateFromConfig(w.config)
+	if err != nil {
+		log.Printf("Failed to create jobs from config: %v", err)
+		return fmt.Errorf("create jobs: %w", err)
+	}
+
+	// Reload jobs in the state
+	w.state.ReloadJobs(newJobs)
+
+	log.Printf("Reloaded %d jobs from config", len(newJobs))
+	for _, job := range newJobs {
+		log.Printf("  - %s", job.Name)
+	}
+
+	return nil
+}
+
+// saveConfigAndReload saves the config and automatically reloads jobs.
+func (w *SettingsWindow) saveConfigAndReload() error {
+	if err := w.store.Save(w.config); err != nil {
+		return fmt.Errorf("save config: %w", err)
+	}
+
+	if err := w.reloadJobs(); err != nil {
+		return fmt.Errorf("reload jobs: %w", err)
+	}
+
+	return nil
+}
+
+func deleteFolder(cfg *config.Config, store *config.Store, index int, refreshFunc func(), reloadJobsFunc func() error) {
 	if index < 0 || index >= len(cfg.Folders) {
 		log.Printf("Invalid folder index: %d", index)
 		return
@@ -54,14 +89,17 @@ func deleteFolder(cfg *config.Config, store *config.Store, index int, refreshFun
 
 	cfg.Folders = append(cfg.Folders[:index], cfg.Folders[index+1:]...)
 
-	// Save updated config
 	err := store.Save(cfg)
 	if err != nil {
 		log.Printf("Failed to save config after deleting folder: %v", err)
 		return
 	}
 
-	log.Printf("Deleted folder at index %d", index)
+	if reloadJobsFunc != nil {
+		if err := reloadJobsFunc(); err != nil {
+			log.Printf("Failed to reload jobs after config change: %v", err)
+		}
+	}
 
 	// Refresh the UI
 	if refreshFunc != nil {
@@ -69,7 +107,7 @@ func deleteFolder(cfg *config.Config, store *config.Store, index int, refreshFun
 	}
 }
 
-func addOrEditFolder(cfg *config.Config, store *config.Store, folderIndex int, refreshFunc func()) {
+func addOrEditFolder(cfg *config.Config, store *config.Store, folderIndex int, refreshFunc func(), reloadJobsFunc func() error) {
 	isEdit := folderIndex >= 0 && folderIndex < len(cfg.Folders)
 
 	var title string
@@ -149,6 +187,13 @@ func addOrEditFolder(cfg *config.Config, store *config.Store, folderIndex int, r
 			return
 		}
 
+		// Reload jobs to reflect config changes
+		if reloadJobsFunc != nil {
+			if err := reloadJobsFunc(); err != nil {
+				log.Printf("Failed to reload jobs after config change: %v", err)
+			}
+		}
+
 		modal.Close()
 
 		// Refresh the folder list
@@ -182,7 +227,7 @@ func addOrEditFolder(cfg *config.Config, store *config.Store, folderIndex int, r
 }
 
 // NewFolderWindow creates a new folder window.
-func NewFolderWindow(app fyne.App, cfg *config.Config, store *config.Store) fyne.Window {
+func NewFolderWindow(app fyne.App, cfg *config.Config, store *config.Store, reloadJobsFunc func() error) fyne.Window {
 	modal := fyne.CurrentApp().NewWindow("Syncing Folders")
 
 	// Container for the folder list
@@ -224,7 +269,7 @@ func NewFolderWindow(app fyne.App, cfg *config.Config, store *config.Store) fyne
 				statusLabel := widget.NewLabel(statusText)
 
 				editBtn := widget.NewButton("Edit", func() {
-					addOrEditFolder(cfg, store, index, refreshFolders)
+					addOrEditFolder(cfg, store, index, refreshFolders, reloadJobsFunc)
 				})
 
 				deleteBtn := widget.NewButton("Delete", func() {
@@ -235,7 +280,7 @@ func NewFolderWindow(app fyne.App, cfg *config.Config, store *config.Store) fyne
 							folder.SourcePath+" → "+folder.DestinationPath,
 						func(confirmed bool) {
 							if confirmed {
-								deleteFolder(cfg, store, index, refreshFolders)
+								deleteFolder(cfg, store, index, refreshFolders, reloadJobsFunc)
 							}
 						},
 						modal,
@@ -258,7 +303,7 @@ func NewFolderWindow(app fyne.App, cfg *config.Config, store *config.Store) fyne
 
 		// Add folder button at the bottom
 		addButton := widget.NewButton("Add New Folder", func() {
-			addOrEditFolder(cfg, store, -1, refreshFolders)
+			addOrEditFolder(cfg, store, -1, refreshFolders, reloadJobsFunc)
 		})
 		widgets = append(widgets, addButton)
 
@@ -311,8 +356,8 @@ func (w *SettingsWindow) changeGeneralSettings() {
 		w.config.CheckInterval = time.Duration(minutes) * time.Minute
 		w.config.StartAtBoot = startAtBootCheck.Checked
 
-		if err := w.store.Save(w.config); err != nil {
-			log.Printf("Failed to save config: %v", err)
+		if err := w.saveConfigAndReload(); err != nil {
+			log.Printf("Failed to save config and reload jobs: %v", err)
 			dialog.ShowError(
 				fmt.Errorf("failed to save configuration: %w", err),
 				modal,
@@ -320,21 +365,10 @@ func (w *SettingsWindow) changeGeneralSettings() {
 			return
 		}
 
-		reloadedCfg, err := w.store.Load()
-		if err != nil {
-			log.Printf("Failed to reload config: %v", err)
-			dialog.ShowError(
-				fmt.Errorf("failed to reload configuration: %w", err),
-				modal,
-			)
-			return
-		}
-
-		w.config = reloadedCfg
 		infoLabel.SetText(fmt.Sprintf("Current interval: %v", w.config.CheckInterval))
 		startAtBootCheck.SetChecked(w.config.StartAtBoot)
 
-		log.Printf("Updated check interval to %v", w.config.CheckInterval)
+		log.Printf("Updated check interval to %v and reloaded jobs", w.config.CheckInterval)
 
 		dialog.ShowInformation(
 			"Success",
@@ -431,18 +465,14 @@ func (w *SettingsWindow) refreshStatus() {
 	}
 }
 
-// Show displays the settings window.
-// The window is created lazily and reused.
 func (w *SettingsWindow) Show() {
 	if w.window == nil {
 		w.window = w.app.NewWindow("MirrorBox - Settings")
 		w.window.Resize(fyne.NewSize(600, 550))
 
-		// Create status widget for displaying last job status
 		w.statusWidget = widget.NewLabel(w.getLastJobStatus())
 		w.statusWidget.Wrapping = fyne.TextWrapWord
 
-		// Buttons section
 		buttonsSection := container.NewVBox(
 			widget.NewLabelWithStyle(
 				"Configuration",
@@ -452,7 +482,7 @@ func (w *SettingsWindow) Show() {
 			widget.NewButton(
 				"Manage Sync Folders",
 				func() {
-					folderWindow := NewFolderWindow(w.app, w.config, w.store)
+					folderWindow := NewFolderWindow(w.app, w.config, w.store, w.reloadJobs)
 					folderWindow.Show()
 				},
 			),
@@ -472,7 +502,6 @@ func (w *SettingsWindow) Show() {
 			),
 		)
 
-		// Status section at the bottom
 		statusSection := container.NewVBox(
 			widget.NewSeparator(),
 			widget.NewLabelWithStyle(
@@ -486,22 +515,18 @@ func (w *SettingsWindow) Show() {
 			}),
 		)
 
-		// Main form with sections
 		form := container.NewVBox(
 			buttonsSection,
 			statusSection,
 		)
 
-		// Wrap in scroll container
 		scrollContainer := container.NewVScroll(form)
 
 		w.window.SetContent(scrollContainer)
 
-		// When user closes the window via the window manager
 		w.window.SetOnClosed(func() {
 			w.window = nil
 			w.statusWidget = nil
-			log.Println("settings window closed")
 		})
 	}
 
@@ -509,28 +534,23 @@ func (w *SettingsWindow) Show() {
 	w.refreshStatus()
 	w.window.Show()
 	w.window.RequestFocus()
-	log.Println("settings window opened")
 }
 
-// Hide closes the settings window if open.
 func (w *SettingsWindow) Hide() {
 	if w.window != nil {
 		w.window.Hide()
 	}
 }
 
-// OnSave allows programmatic save if needed (optional use).
 func (w *SettingsWindow) OnSave(newConfig *config.Config) error {
 	w.config = newConfig
-	return w.store.Save(newConfig)
+	return w.saveConfigAndReload()
 }
 
-// GetConfig returns the current configuration.
 func (w *SettingsWindow) GetConfig() *config.Config {
 	return w.config
 }
 
-// UpdateJobStatus updates the job status display.
 func (w *SettingsWindow) UpdateJobStatus() {
 	fyne.Do(func() {
 		w.refreshStatus()

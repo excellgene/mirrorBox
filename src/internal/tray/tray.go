@@ -1,8 +1,6 @@
 package tray
 
 import (
-	"log"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/theme"
@@ -50,11 +48,8 @@ func (t *Tray) Events() <-chan Event {
 func (t *Tray) Run() {
 	t.menu = NewMenu(t)
 	t.menu.Build()
-	log.Println("System tray ready (Fyne)")
 	t.app.Run()
-
 	close(t.events)
-	log.Println("System tray exited")
 }
 
 func (t *Tray) Quit() {

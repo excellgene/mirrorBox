@@ -20,7 +20,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: src/cmd/app
+        working-directory: src/cmd/mirrorbox
 
     steps:
       - uses: actions/checkout@v4
@@ -32,20 +32,45 @@ jobs:
       - name: Install Fyne tool
         run: go install fyne.io/tools/cmd/fyne@latest
 
-      - name: Package app
+      - name: Package app (macOS)
+        if: matrix.fyne_os == 'darwin'
+        run: |
+          fyne package \
+            -name mirrorBox \
+            -icon Icon.png \
+            -os darwin \
+            ./
+
+      - name: Create .pkg installer (macOS)
+        if: matrix.fyne_os == 'darwin'
+        run: |
+          # Create a temporary directory for package structure
+          mkdir -p package/Applications
+          cp -r mirrorBox.app package/Applications/
+
+          # Build the .pkg installer
+          pkgbuild \
+            --root package \
+            --identifier com.excellgene.mirrorBox \
+            --version 1.0.0 \
+            --install-location /Applications \
+            mirrorBox.pkg
+
+      - name: Package app (Windows)
+        if: matrix.fyne_os == 'windows'
         shell: bash
         run: |
           fyne package \
             -name mirrorBox \
-            -icon ../../internal/ui/icons/appicon.png \
-            -os ${{ matrix.fyne_os }} \
+            -icon Icon.png \
+            -os windows \
             ./
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: mirrorBox-${{ matrix.fyne_os }}
-          path: ./*.${{ matrix.ext }}
+          path: src/cmd/mirrorbox/mirrorBox.${{ matrix.ext }}
 
   publish:
     needs: release
@@ -58,5 +83,5 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: mirrorBox ${{ github.ref_name }}
           files: |
-            **/*.msi
             **/*.pkg
+            **/*.msi

@@ -46,3 +46,24 @@ func (s *State) RemoveJob(name string) {
 	defer s.mu.Unlock()
 	delete(s.jobs, name)
 }
+
+// ClearJobs removes all jobs from the state.
+func (s *State) ClearJobs() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.jobs = make(map[string]*syncpkg.Job)
+}
+
+// ReloadJobs clears existing jobs and adds new ones.
+func (s *State) ReloadJobs(newJobs []*syncpkg.Job) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	// Clear existing jobs
+	s.jobs = make(map[string]*syncpkg.Job)
+
+	// Add new jobs
+	for _, job := range newJobs {
+		s.jobs[job.Name] = job
+	}
+}

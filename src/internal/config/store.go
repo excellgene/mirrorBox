@@ -54,8 +54,13 @@ func (s *Store) Save(cfg *Config) error {
 	}
 
 	log.Printf("Config saved to %s", s.configPath)
-	log.Printf("Config content: %s", string(data))
 
+	reloadedCfg, err := s.Load()
+	if err != nil {
+		return fmt.Errorf("reload config: %w", err)
+	}
+
+	*cfg = *reloadedCfg
 
 	return nil
 }
