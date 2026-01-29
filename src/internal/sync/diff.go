@@ -4,19 +4,18 @@ import (
 	"excellgene.com/mirrorBox/internal/sync/fs"
 )
 
-
 // Action represents what needs to be done for a file.
 type Action int
 
 const (
-	ActionNone   Action = iota
+	ActionNone Action = iota
 	ActionCreate
 	ActionUpdate
 	ActionDelete
 )
 
 type FileDiff struct {
-	Path   string 
+	Path   string
 	Action Action
 	Source *fs.FileInfo
 	Dest   *fs.FileInfo
@@ -54,12 +53,10 @@ func (d *Differ) Diff(source, dest []fs.FileInfo) *DiffResult {
 
 	var diffs []FileDiff
 
-	// Check each source file
 	for path, srcFile := range sourceMap {
 		destFile, existsAtDest := destMap[path]
 
 		if !existsAtDest {
-			// File exists at source but not dest -> create
 			diffs = append(diffs, FileDiff{
 				Path:   path,
 				Action: ActionCreate,
@@ -67,7 +64,6 @@ func (d *Differ) Diff(source, dest []fs.FileInfo) *DiffResult {
 				Dest:   nil,
 			})
 		} else if d.needsUpdate(srcFile, destFile) {
-			// File exists at both but needs update
 			diffs = append(diffs, FileDiff{
 				Path:   path,
 				Action: ActionUpdate,
@@ -77,7 +73,6 @@ func (d *Differ) Diff(source, dest []fs.FileInfo) *DiffResult {
 		}
 	}
 
-	// Check for files at dest but not source
 	if d.DeleteExtraFiles {
 		for path, destFile := range destMap {
 			if _, existsAtSource := sourceMap[path]; !existsAtSource {
@@ -97,17 +92,14 @@ func (d *Differ) Diff(source, dest []fs.FileInfo) *DiffResult {
 // needsUpdate determines if a file needs to be updated.
 // Currently uses modification time and size.
 func (d *Differ) needsUpdate(source, dest fs.FileInfo) bool {
-	// Skip directories
 	if source.IsDir {
 		return false
 	}
 
-	// If size differs, needs update
 	if source.Size != dest.Size {
 		return true
 	}
 
-	// If source is newer, needs update
 	if source.ModTime > dest.ModTime {
 		return true
 	}

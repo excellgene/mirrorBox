@@ -85,12 +85,10 @@ func (s *Syncer) create(ctx context.Context, diff FileDiff, sourcePath, destPath
 	srcPath := filepath.Join(sourcePath, diff.Path)
 	dstPath := filepath.Join(destPath, diff.Path)
 
-	// If it's a directory, just create it
 	if diff.Source.IsDir {
 		return os.MkdirAll(dstPath, 0755)
 	}
 
-	// Use the copier to copy the file (it handles creating parent directories)
 	if err := s.copier.Copy(srcPath, dstPath); err != nil {
 		return fmt.Errorf("copy file: %w", err)
 	}
@@ -100,11 +98,9 @@ func (s *Syncer) create(ctx context.Context, diff FileDiff, sourcePath, destPath
 
 // update handles updating an existing file at destination.
 func (s *Syncer) update(ctx context.Context, diff FileDiff, sourcePath, destPath string) error {
-	// For now, update is same as create (overwrite)
 	return s.create(ctx, diff, sourcePath, destPath)
 }
 
-// delete handles removing a file or directory from destination.
 func (s *Syncer) delete(ctx context.Context, diff FileDiff, destPath string) error {
 	targetPath := filepath.Join(destPath, diff.Path)
 	return os.RemoveAll(targetPath)
