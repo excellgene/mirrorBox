@@ -2,7 +2,10 @@
 
 Cross platform tool to sync folders periodically
 
-![System tray](./assets/1.jpg)
+<div align="center">
+  <img src="./assets/1.png" alt="MirrorBox Logo" width="128" height="128"/>
+</div> 
+
 ![Settings](./assets/2.jpg)
 ![General Settings](./assets/3.jpg)
 ![Add folder 1](./assets/4.jpg)
