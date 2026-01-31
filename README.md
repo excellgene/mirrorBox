@@ -1,9 +1,13 @@
+<div align="center">
+  <img src="https://github.com/excellgene/mirrorBox/blob/main/src/cmd/mirrorbox/Icon.png" alt="App logo" width="100" height="100"/>
+</div>
+
 # MirrorBox
 
 Cross platform tool to sync folders periodically
 
 <div align="center">
-  <img src="./assets/1.png" alt="MirrorBox Logo" width="128" height="128"/>
+  <img src="https://github.com/excellgene/mirrorBox/blob/main/assets/1.jpg" alt="Screen shot 1" width="300" height="200"/>
 </div> 
 
 ![Settings](./assets/2.jpg)
