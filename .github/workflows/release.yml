@@ -74,7 +74,7 @@ jobs:
 
       - name: Build installer (Windows)
         if: matrix.fyne_os == 'windows'
-        run: iscc /Qp "../../installer/windows/mirrorbox.iss"
+        run: iscc /Qp "../../../installer/windows/mirrorbox.iss"
 
       - name: Upload artifact (macOS)
         if: matrix.fyne_os == 'darwin'
