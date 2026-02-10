@@ -8,7 +8,6 @@ UninstallDisplayIcon={app}\mirrorBox.exe
 SourceDir=..\..\src\cmd\mirrorbox
 OutputBaseFilename=mirrorBox-setup
 OutputDir=.
-SetupIconFile=winres\icon.ico
 Compression=lzma2
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64compatible
