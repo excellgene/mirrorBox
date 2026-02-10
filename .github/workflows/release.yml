@@ -11,10 +11,8 @@ jobs:
         include:
           - os: windows-latest
             fyne_os: windows
-            ext: msi
           - os: macos-latest
             fyne_os: darwin
-            ext: pkg
 
     runs-on: ${{ matrix.os }}
 
@@ -30,6 +28,7 @@ jobs:
           go-version: "1.22"
 
       - name: Install Fyne tool
+        if: matrix.fyne_os == 'darwin'
         run: go install fyne.io/tools/cmd/fyne@latest
 
       - name: Package app (macOS)
@@ -56,21 +55,40 @@ jobs:
             --install-location /Applications \
             mirrorBox.pkg
 
-      - name: Package app (Windows)
+      - name: Install go-winres
         if: matrix.fyne_os == 'windows'
-        shell: bash
-        run: |
-          fyne package \
-            -name mirrorBox \
-            -icon Icon.png \
-            -os windows \
-            ./
+        run: go install github.com/tc-hib/go-winres@latest
 
-      - name: Upload artifact
+      - name: Generate Windows resources
+        if: matrix.fyne_os == 'windows'
+        run: go-winres make
+
+      - name: Build Windows exe
+        if: matrix.fyne_os == 'windows'
+        run: go build -ldflags="-H windowsgui" -o cmd/mirrorbox/mirrorBox.exe ./cmd/mirrorbox
+        working-directory: src
+
+      - name: Install Inno Setup
+        if: matrix.fyne_os == 'windows'
+        run: choco install innosetup -y --no-progress
+
+      - name: Build installer (Windows)
+        if: matrix.fyne_os == 'windows'
+        run: iscc /Qp "../../installer/windows/mirrorbox.iss"
+
+      - name: Upload artifact (macOS)
+        if: matrix.fyne_os == 'darwin'
         uses: actions/upload-artifact@v4
         with:
-          name: mirrorBox-${{ matrix.fyne_os }}
-          path: src/cmd/mirrorbox/mirrorBox.${{ matrix.ext }}
+          name: mirrorBox-darwin
+          path: src/cmd/mirrorbox/mirrorBox.pkg
+
+      - name: Upload artifact (Windows)
+        if: matrix.fyne_os == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mirrorBox-windows
+          path: src/cmd/mirrorbox/mirrorBox-setup.exe
 
   publish:
     needs: release
@@ -84,4 +102,4 @@ jobs:
           name: mirrorBox ${{ github.ref_name }}
           files: |
             **/*.pkg
-            **/*.msi
+            **/*-setup.exe

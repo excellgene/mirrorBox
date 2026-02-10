@@ -3,3 +3,4 @@ src/bin/*
 .DS_Store
 *.app
 *.exe
+*.syso
