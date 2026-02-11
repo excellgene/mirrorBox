@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net"
 	"os"
 	"path/filepath"
 
@@ -10,9 +11,43 @@ import (
 	"excellgene.com/mirrorBox/internal/tray"
 	"excellgene.com/mirrorBox/internal/ui"
 	"fyne.io/fyne/v2"
+	fyneApp "fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/widget"
 )
 
 func main() {
+	listener, err := net.Listen("tcp", "127.0.0.1:51210")
+
+	if err != nil {
+		a := fyneApp.New()
+		w := a.NewWindow("MirrorBox")
+		w.Resize(fyne.NewSize(380, 140))
+		w.SetFixedSize(true)
+
+		message := widget.NewLabel("Another instance of MirrorBox is already running.")
+		message.Wrapping = fyne.TextWrapWord
+
+		d := dialog.NewCustomWithoutButtons(
+			"MirrorBox - Already Running",
+			container.NewPadded(message),
+			w,
+		)
+		d.Resize(fyne.NewSize(380, 140))
+		d.Show()
+
+		d.SetOnClosed(func() {
+			a.Quit()
+		})
+
+		w.Show()
+		a.Run()
+		os.Exit(1)
+	}
+
+	defer listener.Close()
+
 	configPath := getConfigPath()
 	configStore := config.NewStore(configPath)
 
