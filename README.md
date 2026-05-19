@@ -1,7 +1,3 @@
-<div align="center">
-  <img src="https://github.com/excellgene/mirrorBox/blob/main/src/cmd/mirrorbox/Icon.png" alt="App logo" width="100" height="100"/>
-</div>
-
 # MirrorBox
 
 Cross platform tool to sync folders periodically
